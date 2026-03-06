@@ -187,6 +187,7 @@ body{
 .mode-badge.mode-view{ background:rgba(59,130,246,0.12); border-color:rgba(59,130,246,0.18); }
 .mode-btn{ padding:6px 10px; margin-left:6px; border-radius:6px; background:transparent; color:var(--text); border:1px solid var(--border); cursor:pointer }
 .mode-btn.active{ background:var(--primary); color:#fff; border-color:var(--primary) }
+.mode-btn:disabled{ opacity:0.5; cursor:not-allowed }
 
 .viewer{
   flex:1;
@@ -237,6 +238,7 @@ pre{
       <div style="margin-left:auto">
         <button id="runBtn" onclick="runFile()" class="mode-btn active">Run</button>
         <button id="viewBtn" onclick="viewSource()" class="mode-btn">View Source</button>
+        <button id="openBtn" onclick="openInNewTab()" class="mode-btn" disabled>Open</button>
       </div>
     </div>
   </div>
@@ -266,12 +268,24 @@ function updateURL(){
   history.replaceState(null, '', '?' + params.toString());
 }
 
+function updateOpenButton(){
+  const btn = document.getElementById('openBtn');
+  if(!btn) return;
+  btn.disabled = !selectedFile;
+  if(selectedFile){
+    btn.title = viewerMode === 'view' ? 'Open source in new tab' : 'Open file in new tab';
+  } else {
+    btn.title = 'No file selected';
+  }
+}
+
 document.querySelectorAll('.file').forEach(el=>{
   el.addEventListener('click', ()=>{
     selectedFile = el.dataset.enc;
     document.getElementById('currentFile').innerText = el.dataset.path;
     // Auto-act according to current mode
     if (viewerMode === 'view') viewSource(); else runFile();
+    updateOpenButton();
   });
 });
 
@@ -297,6 +311,7 @@ function runFile(){
   document.getElementById('viewer').innerHTML =
     `<iframe src="${decodeURIComponent(selectedFile)}"></iframe>`;
   updateURL();
+  updateOpenButton();
 }
 
 function viewSource(){
@@ -311,7 +326,14 @@ function viewSource(){
       document.getElementById('viewer').innerHTML =
         `<pre>${code.replace(/</g,"&lt;")}</pre>`;
       updateURL();
+      updateOpenButton();
     });
+}
+
+function openInNewTab(){
+  if(!selectedFile) return;
+  let url = viewerMode === 'view' ? ('?view=' + selectedFile) : decodeURIComponent(selectedFile);
+  window.open(url, '_blank');
 }
 
 // initialize from URL params if present
@@ -321,6 +343,7 @@ if (initialFile) {
   const el = document.querySelector('.file[data-enc="' + initialFile + '"]');
   if (el) document.getElementById('currentFile').innerText = el.dataset.path;
   if (initialMode === 'view') viewSource(); else runFile();
+  updateOpenButton();
 }
 
 document.getElementById('search').addEventListener('input', function(){
