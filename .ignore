@@ -1,0 +1,17 @@
+# Loader ignore rules
+# - Use * and ** wildcards
+# - Use ! to keep/include a path after a broader ignore
+#
+# Contoh: di pemweb1/P4 tampil index.php saja
+pemweb1/P3/2*.php
+pemweb1/P3/4*.php
+pemweb1/P3/5*.php
+pemweb1/P3/6*.php
+
+pemweb1/P4/*.php
+phpinfo.php
+!pemweb1/P4/index.php
+
+# Contoh lain (opsional): sembunyikan isi rwd, sisakan index.html
+# pemweb1/P4/rwd/**
+# !pemweb1/P4/rwd/index.html

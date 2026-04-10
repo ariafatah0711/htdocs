@@ -1,31 +1,172 @@
 <?php
-// Simple PHP loader: lists all .php files below project root and lets you run/view them
+// Loader files can be filtered with .ignore (gitignore-like basic patterns).
 $base = realpath(__DIR__);
-// Exclude patterns: exact filenames, filename suffixes, and directories
-$excludeExact = [basename(__FILE__)];
+$allowedExtensions = ['php', 'html', 'htm'];
+// Exclude patterns: exact filenames, filename suffixes, and directories.
+$excludeExact = [ltrim(str_replace('\\', '/', substr(__FILE__, strlen($base))), '/')];
 $excludeSuffix = ['.bak'];
 $excludeDirs = ['tmp'];
 
-function scanPhpFiles($dir, $base) {
-    $files = [];
-    $items = scandir($dir);
-    foreach ($items as $it) {
-        if ($it === '.' || $it === '..') continue;
-        $full = $dir . DIRECTORY_SEPARATOR . $it;
-    if (is_dir($full)) {
-      // skip excluded directories
-      if (in_array($it, $GLOBALS['excludeDirs'])) continue;
-      $files = array_merge($files, scanPhpFiles($full, $base));
-        } else {
-            if (substr($it, -4) === '.php') {
-                $rel = ltrim(str_replace('\\', '/', substr($full, strlen($base))), '/');
-                $files[] = $rel;
-            }
-        }
-    }
-    sort($files);
-    return $files;
+function normalizeRelPath($path) {
+  $path = str_replace('\\', '/', trim($path));
+  $path = preg_replace('#^\./+#', '', $path);
+  return ltrim($path, '/');
 }
+
+function wildcardMatch($pattern, $path) {
+  $quoted = preg_quote($pattern, '#');
+  $regex = str_replace(['\\*\\*', '\\*', '\\?'], ['.*', '[^/]*', '[^/]'], $quoted);
+  return (bool) preg_match('#^' . $regex . '$#i', $path);
+}
+
+function loadIgnoreRules($base) {
+  $rules = [];
+  $ignoreFile = $base . DIRECTORY_SEPARATOR . '.ignore';
+  if (!is_file($ignoreFile)) {
+    return $rules;
+  }
+
+  $lines = file($ignoreFile, FILE_IGNORE_NEW_LINES);
+  if ($lines === false) {
+    return $rules;
+  }
+
+  foreach ($lines as $line) {
+    $line = trim($line);
+    if ($line === '' || strpos($line, '#') === 0) {
+      continue;
+    }
+
+    $negate = false;
+    if ($line[0] === '!') {
+      $negate = true;
+      $line = substr($line, 1);
+    }
+
+    $line = normalizeRelPath($line);
+    if ($line === '') {
+      continue;
+    }
+
+    $dirOnly = substr($line, -1) === '/';
+    $line = rtrim($line, '/');
+    if ($line === '') {
+      continue;
+    }
+
+    $rules[] = [
+      'pattern' => $line,
+      'negate' => $negate,
+      'dirOnly' => $dirOnly,
+    ];
+  }
+
+  return $rules;
+}
+
+function isIgnoredByRules($relPath, $isDir) {
+  $rules = $GLOBALS['ignoreRules'];
+  if (empty($rules)) {
+    return false;
+  }
+
+  $relPath = normalizeRelPath($relPath);
+  if ($relPath === '') {
+    return false;
+  }
+
+  $ignored = false;
+  foreach ($rules as $rule) {
+    $pattern = $rule['pattern'];
+    $prefixMatch = ($relPath === $pattern) || (strpos($relPath, $pattern . '/') === 0);
+    $match = false;
+
+    if ($rule['dirOnly']) {
+      $match = $prefixMatch;
+    } else {
+      $match = $prefixMatch
+        || wildcardMatch($pattern, $relPath)
+        || wildcardMatch($pattern, basename($relPath));
+    }
+
+    if ($match) {
+      $ignored = !$rule['negate'];
+    }
+  }
+
+  return $ignored;
+}
+
+function hasAllowedExtension($path) {
+  $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+  return in_array($ext, $GLOBALS['allowedExtensions'], true);
+}
+
+function toDisplayPath($relPath) {
+  $relPath = normalizeRelPath($relPath);
+  $name = strtolower(basename($relPath));
+  if (in_array($name, ['index.php', 'index.html', 'index.htm'], true)) {
+    $dir = dirname($relPath);
+    if ($dir === '.' || $dir === '') {
+      return '/';
+    }
+    return str_replace('\\', '/', $dir) . '/';
+  }
+  return $relPath;
+}
+
+function isExcludedPath($relPath, $isDir = false) {
+  $relPath = normalizeRelPath($relPath);
+  $name = basename($relPath);
+
+  if (in_array($relPath, $GLOBALS['excludeExact'], true)) {
+    return true;
+  }
+
+  foreach ($GLOBALS['excludeSuffix'] as $suf) {
+    if ($suf !== '' && substr($name, -strlen($suf)) === $suf) {
+      return true;
+    }
+  }
+
+  if ($isDir && in_array($name, $GLOBALS['excludeDirs'], true)) {
+    return true;
+  }
+
+  return isIgnoredByRules($relPath, $isDir);
+}
+
+function scanProjectFiles($dir, $base) {
+  $files = [];
+  $items = scandir($dir);
+  foreach ($items as $it) {
+    if ($it === '.' || $it === '..') {
+      continue;
+    }
+
+    $full = $dir . DIRECTORY_SEPARATOR . $it;
+    $rel = normalizeRelPath(substr($full, strlen($base)));
+
+    if (is_dir($full)) {
+      if (isExcludedPath($rel, true)) {
+        continue;
+      }
+      $files = array_merge($files, scanProjectFiles($full, $base));
+      continue;
+    }
+
+    if (!hasAllowedExtension($full) || isExcludedPath($rel)) {
+      continue;
+    }
+
+    $files[] = $rel;
+  }
+
+  sort($files);
+  return $files;
+}
+
+$ignoreRules = loadIgnoreRules($base);
 
 function safeResolve($base, $rel) {
     $candidate = realpath($base . DIRECTORY_SEPARATOR . $rel);
@@ -38,18 +179,10 @@ function safeResolve($base, $rel) {
 $run = isset($_GET['run']) ? rawurldecode($_GET['run']) : null;
 $view = isset($_GET['view']) ? rawurldecode($_GET['view']) : null;
 
-function isExcluded($name) {
-  global $excludeExact, $excludeSuffix, $excludeDirs;
-  if (in_array($name, $excludeExact)) return true;
-  foreach ($excludeSuffix as $suf) {
-    if (substr($name, -strlen($suf)) === $suf) return true;
-  }
-  return false;
-}
-
 if ($run) {
     $path = safeResolve($base, $run);
-    if ($path && is_file($path) && substr($path, -4) === '.php' && !isExcluded(basename($path))) {
+    $relPath = $path ? normalizeRelPath(substr($path, strlen($base))) : '';
+    if ($path && is_file($path) && hasAllowedExtension($path) && !isExcludedPath($relPath)) {
         // Use iframe pointing to the relative URL so the file runs in its own context
         $src = htmlspecialchars(str_replace('\\', '/', $run));
         ?>
@@ -69,7 +202,8 @@ if ($run) {
 
 if ($view) {
     $path = safeResolve($base, $view);
-    if ($path && is_file($path) && substr($path, -4) === '.php' && !isExcluded(basename($path))) {
+  $relPath = $path ? normalizeRelPath(substr($path, strlen($base))) : '';
+  if ($path && is_file($path) && hasAllowedExtension($path) && !isExcludedPath($relPath)) {
         $code = file_get_contents($path);
         ?>
         <!doctype html>
@@ -88,7 +222,7 @@ if ($view) {
     exit;
 }
 
-$files = scanPhpFiles($base, $base);
+$files = scanProjectFiles($base, $base);
 
 // Helper: format bytes (used in file list)
 function formatBytes($bytes) {
@@ -216,16 +350,17 @@ pre{
 <div class="sidebar">
   <h2>📂 PHP Loader</h2>
   <p style="font-size: 12px;">Generate By chat GPT | Idea Aria Fatah</p>
+  <p style="font-size: 12px;color:#94a3b8;margin-top:0;">Tip: buat file <b>.ignore</b> di folder root.</p>
   <input id="search" class="search" placeholder="Search...">
 
   <?php foreach ($files as $f):
-      if (isExcluded(basename($f))) continue;
       $enc = rawurlencode($f);
+      $display = toDisplayPath($f);
   ?>
     <div class="file"
-         data-path="<?php echo htmlspecialchars($f) ?>"
+         data-path="<?php echo htmlspecialchars($display) ?>"
          data-enc="<?php echo $enc ?>">
-      <?php echo htmlspecialchars($f) ?>
+      <?php echo htmlspecialchars($display) ?>
     </div>
   <?php endforeach; ?>
 </div>
@@ -252,6 +387,7 @@ pre{
 <script>
 const initialFile = "<?php echo isset($_GET['file']) ? rawurlencode($_GET['file']) : '' ?>";
 const initialMode = "<?php echo isset($_GET['mode']) ? $_GET['mode'] : '' ?>";
+const initialQuery = "<?php echo isset($_GET['q']) ? rawurlencode($_GET['q']) : '' ?>";
 </script>
 
 <script>
@@ -260,12 +396,22 @@ let selectedFile = null;
 let viewerMode = 'run';
 
 function updateURL(){
-  if(!selectedFile) return;
   const params = new URLSearchParams();
-  // selectedFile is encoded in the DOM; decode it once so URLSearchParams encodes correctly
-  params.set('file', decodeURIComponent(selectedFile));
-  if (viewerMode) params.set('mode', viewerMode);
-  history.replaceState(null, '', '?' + params.toString());
+  const searchEl = document.getElementById('search');
+  const q = searchEl ? searchEl.value.trim() : '';
+
+  if (q) {
+    params.set('q', q);
+  }
+
+  if (selectedFile) {
+    // selectedFile is encoded in the DOM; decode once so URLSearchParams encodes correctly.
+    params.set('file', decodeURIComponent(selectedFile));
+    if (viewerMode) params.set('mode', viewerMode);
+  }
+
+  const qs = params.toString();
+  history.replaceState(null, '', qs ? ('?' + qs) : location.pathname);
 }
 
 function updateOpenButton(){
@@ -336,6 +482,13 @@ function openInNewTab(){
   window.open(url, '_blank');
 }
 
+function applySearchFilter(query){
+  const q = query.toLowerCase();
+  document.querySelectorAll('.file').forEach(el=>{
+    el.style.display = el.dataset.path.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
 // initialize from URL params if present
 if (initialFile) {
   selectedFile = initialFile;
@@ -346,12 +499,18 @@ if (initialFile) {
   updateOpenButton();
 }
 
-document.getElementById('search').addEventListener('input', function(){
-  let q = this.value.toLowerCase();
-  document.querySelectorAll('.file').forEach(el=>{
-    el.style.display = el.dataset.path.toLowerCase().includes(q) ? '' : 'none';
+const searchInput = document.getElementById('search');
+if (searchInput) {
+  if (initialQuery) {
+    searchInput.value = decodeURIComponent(initialQuery);
+    applySearchFilter(searchInput.value);
+  }
+
+  searchInput.addEventListener('input', function(){
+    applySearchFilter(this.value);
+    updateURL();
   });
-});
+}
 </script>
 
 </body>

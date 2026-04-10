@@ -27,7 +27,7 @@ class Bank {
     }
 
     public function cetak() {
-         echo "<h3>=== ".self::BANK." ===</h3>";
+        echo "<h3>=== ".self::BANK." ===</h3>";
         echo "No. Rekening : {$this->norek}";
         echo "<br>Nama Nasabah : {$this->nama}";
         echo "<br>Saldo        : Rp. ".number_format($this->saldo,0,',','.');
