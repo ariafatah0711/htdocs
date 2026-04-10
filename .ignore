@@ -9,8 +9,11 @@ pemweb1/P3/5*.php
 pemweb1/P3/6*.php
 
 pemweb1/P4/*.php
+pemweb1/P5/*.php
 phpinfo.php
+
 !pemweb1/P4/index.php
+!pemweb1/P5/index.php
 
 # Contoh lain (opsional): sembunyikan isi rwd, sisakan index.html
 # pemweb1/P4/rwd/**
