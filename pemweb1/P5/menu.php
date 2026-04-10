@@ -18,19 +18,20 @@
         <li class="nav-item">
           <a class="nav-link" href="index.php?hal=contact">Contact</a>
         </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Produk
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#">Kategori</a></li>
-            <li><a class="dropdown-item" href="#">Produk</a></li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li><a class="dropdown-item" href="#">Something else here</a></li>
-          </ul>
-        </li>
+      <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" role="button"
+      data-bs-toggle="dropdown" aria-expanded="false">
+      Produk
+      </a>
+      <ul class="dropdown-menu">
+      <li><a class="dropdown-item"
+      href="index.php?hal=jenis_list">Kategori</a></li>
+      <li><a class="dropdown-item"
+      href="index.php?hal=produk_list">Produk</a></li>
+      <li><hr class="dropdown-divider"></li>
+      <li><a class="dropdown-item" href="#">Something else here</a></li>
+      </ul>
+      </li>
         <li class="nav-item">
           <a class="nav-link" href="#">Login</a>
         </li>

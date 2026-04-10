@@ -10,8 +10,8 @@ CREATE TABLE jenis (
 );
 
 CREATE TABLE produk (
-    id_product INT PRIMARY KEY AUTO_INCREMENT,
-    no_product char(5) NOT NULL UNIQUE,
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    no_produk char(5) NOT NULL UNIQUE,
     nama varchar(30) NOT NULL,
     kondisi ENUM('Baru','Second') NOT NULL,
     harga DOUBLE NOT NULL,
@@ -31,7 +31,7 @@ INSERT INTO jenis(nama) VALUES
 ('Elektronik'),('Furniture');
 
 INSERT INTO produk
-(no_product,nama,kondisi,harga,stok,id_jenis,foto)
+(no_produk,nama,kondisi,harga,stok,id_jenis,foto)
 VALUES
 ('KL111','Kulkas 2
 Pintu','Baru',5000000,4,1,'kulkas.jpg'),

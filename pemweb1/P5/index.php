@@ -11,6 +11,12 @@
 <body>
   <div class="container-fluid">
 
+    <?php
+      include_once 'koneksi.php';
+      include_once 'models/produk.php';
+      include_once 'models/jenis.php';
+    ?>
+
     <div class="row">
       <div class="col-md-12">
         <?php include_once 'header.php'; ?>
