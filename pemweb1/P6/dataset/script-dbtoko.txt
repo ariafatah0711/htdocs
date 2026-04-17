@@ -1,0 +1,133 @@
+Microsoft Windows [Version 10.0.26200.8037]
+(c) Microsoft Corporation. All rights reserved.
+
+
+C:\Users\62853>cd/
+
+
+C:\>cd xampp/mysql/bin
+
+
+C:\xampp\mysql\bin>mysql -u root -p
+Enter password:
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 81
+Server version: 10.4.32-MariaDB mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+
+MariaDB [(none)]> SHOW DATABASES;
++-----------------------+
+| Database              |
++-----------------------+
+| bukutamu              |
+| db_actati             |
+| db_bengkel            |
+| db_cuit               |
+| db_kampus             |
+| db_kampuss            |
+| db_peminjaman_ruangan |
+| db_projects           |
+| db_puskesmas          |
+| dbkampus              |
+| dblatihan             |
+| dblatihan2            |
+| dbpegawai             |
+| dbpegawai2            |
+| dbpenjualan           |
+| dbpos_sina            |
+| dbpossib7             |
+| dbprojek_uas          |
+| dbti09                |
+| dbtoko_kamis2         |
+| dbtoko_kamis_pagi     |
+| dbtoko_senin          |
+| dbtoko_sina           |
+| dbtransaksi           |
+| information_schema    |
+| laravel_rest_api      |
+| laravel_student_api   |
+| medis_care            |
+| mydb                  |
+| mysql                 |
+| pasarnab_muamalah     |
+| performance_schema    |
+| perpustakaan          |
+| phpmyadmin            |
+| sib7                  |
+| test                  |
+| ti09                  |
+| toko_senin            |
+| tokosenin             |
+| tugassib              |
+| uts_backend           |
++-----------------------+
+41 rows in set (0.001 sec)
+
+
+MariaDB [(none)]> CREATE DATABASE dbtoko;
+Query OK, 1 row affected (0.002 sec)
+
+
+MariaDB [(none)]> USE dbtoko;
+Database changed
+
+
+MariaDB [dbtoko]> CREATE TABLE jenis(
+    -> id int primary key auto_increment,
+    -> nama varchar(30) not null unique);
+Query OK, 0 rows affected (0.009 sec)
+
+
+MariaDB [dbtoko]> INSERT INTO jenis(nama) VALUES
+    -> ('Elektronik'),('Furniture');
+Query OK, 2 rows affected (0.002 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+
+MariaDB [dbtoko]> SELECT * FROM jenis;
++----+------------+
+| id | nama       |
++----+------------+
+|  1 | Elektronik |
+|  2 | Furniture  |
++----+------------+
+2 rows in set (0.000 sec)
+
+
+MariaDB [dbtoko]> CREATE TABLE produk(
+    -> id int primary key auto_increment,
+    -> kode char(5) not null unique,
+    -> nama varchar(30) not null,
+    -> kondisi enum('Baru','Second') not null,
+    -> harga double not null,
+    -> stok int not null,
+    -> idjenis int not null REFERENCES jenis(id),
+    -> foto varchar(30));
+Query OK, 0 rows affected (0.013 sec)
+
+
+MariaDB [dbtoko]> INSERT INTO produk
+    -> (kode,nama,kondisi,harga,stok,idjenis,foto)
+    -> VALUES
+    -> ('KL111','Kulkas 2 Pintu','Baru',5000000,4,1,'kulkas.jpg'),
+    -> ('KL112','Kulkas 2 Pintu','Second',2000000,2,1,'kulkas2.jpg'),
+    -> ('MJ111','Meja Belajar','Baru',3000000,5,2,'meja_belajar.jpg'),
+    -> ('MJ112','Meja Makan','Baru',4000000,2,2,'meja_makan.jpg');
+Query OK, 4 rows affected (0.004 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+
+MariaDB [dbtoko]> SELECT * FROM produk;
++----+-------+----------------+---------+---------+------+---------+------------------+
+| id | kode  | nama           | kondisi | harga   | stok | idjenis | foto             |
++----+-------+----------------+---------+---------+------+---------+------------------+
+|  1 | KL111 | Kulkas 2 Pintu | Baru    | 5000000 |    4 |       1 | kulkas.jpg       |
+|  2 | KL112 | Kulkas 2 Pintu | Second  | 2000000 |    2 |       1 | kulkas2.jpg      |
+|  3 | MJ111 | Meja Belajar   | Baru    | 3000000 |    5 |       2 | meja_belajar.jpg |
+|  4 | MJ112 | Meja Makan     | Baru    | 4000000 |    2 |       2 | meja_makan.jpg   |
++----+-------+----------------+---------+---------+------+---------+------------------+
+4 rows in set (0.000 sec)
