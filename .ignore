@@ -12,12 +12,14 @@ pemweb1/P4/*.php
 pemweb1/P5/**
 pemweb1/P6/**
 pemweb1/P7/**/*
+pemweb1/Tugas_1/**/*
 
 !pemweb1/P4/index.php
 !pemweb1/P5/index.php
 !pemweb1/P6/index.php
 !pemweb1/P7/app/index.php
 !pemweb1/P7/laravel/public/index.php
+!pemweb1/Tugas_1/index.php
 
 # Contoh lain (opsional): sembunyikan isi rwd, sisakan index.html
 # pemweb1/P4/rwd/**
