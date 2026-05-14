@@ -214,3 +214,18 @@ foto_sekolah (VARCHAR 255) - Nama file foto
 - Error dari database ditampilkan di UI via session flash (bukan di URL)
 - Session divalidasi di setiap halaman yang memerlukan autentikasi
 - Password di-hash menggunakan MD5 (untuk tugas; production gunakan bcrypt/password_hash)
+
+<!-- ```
+# Windows
+cp -r C:\Users\ariaf\scoop\persist\laragon\www\pemweb1\Tugas_1 E:\_test
+cd E:\_test\Tugas_1\
+
+git init
+git add .
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/ariafatah0711/pemweb1_tugas1.git
+git push -u origin main
+
+remove-item E:\_test\Tugas_1 -Recurse
+``` -->
