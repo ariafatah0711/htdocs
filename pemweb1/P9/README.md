@@ -1,4 +1,31 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## Laravel
+```bash
+cd pemweb1/P7
+composer create-project --prefer-dist laravel/laravel laravel
+
+cd laravel
+php artisan serve
+```
+
+```bash
+php artisan migrate
+# berfungsi untuk menjalankan migrasi database yang telah dibuat, sehingga tabel-tabel yang diperlukan untuk aplikasi Laravel dapat dibuat di database
+
+php artisan make:seeder StaffSeeder
+# berfungsi untuk membuat seeder baru dengan nama StaffSeeder, yang akan digunakan untuk mengisi data awal ke dalam tabel staff di database
+
+php artisan db:seed --class=StaffSeeder
+# berfungsi untuk menjalankan seeder yang telah dibuat, sehingga data yang telah didefinisikan dalam seeder akan dimasukkan ke dalam tabel staff di database
+```
+
+```bash
+rm -rf vendor
+composer install
+php artisan optimize:clear
+php artisan serve
+```
+
+<!-- <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
 <a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
@@ -55,4 +82,4 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT). -->

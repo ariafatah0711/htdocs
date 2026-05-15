@@ -12,6 +12,8 @@ pemweb1/P4/*.php
 pemweb1/P5/**
 pemweb1/P6/**
 pemweb1/P7/**/*
+pemweb1/P9/**/*
+pemweb1/P10/**/*
 pemweb1/Tugas_1/**/*
 
 !pemweb1/P4/index.php

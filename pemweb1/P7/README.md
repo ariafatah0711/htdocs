@@ -24,12 +24,3 @@ password, role, foto) VALUES
 ('Ahmad Mulyawan', 'ahmad@gmail.com', 'ahmad', SHA1(MD5('password')), 'staff', NULL),
 ('Dewi Maharani', 'dewi@gmail.com', 'dewi', SHA1(MD5('password')), 'staff', NULL);
 ```
-
-## Laravel
-```bash
-cd pemweb1/P7
-composer create-project --prefer-dist laravel/laravel laravel
-
-cd laravel
-php artisan serve
-```
